@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 FROM_EMAIL = os.environ.get('FROM_EMAIL', 'noreply@byjeremiahsmith.ink')
-TO_EMAIL = 'jeremiah3335@gmail.com'
+TO_EMAIL = 'jeremiah@creativekonsoles.com'
 
 
 @app.route('/')
