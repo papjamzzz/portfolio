@@ -232,6 +232,14 @@
     .contact-form { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 34px; display: flex; flex-direction: column; gap: 18px; box-shadow: var(--shadow-sm); }
     .form-field { display: flex; flex-direction: column; gap: 8px; }
     .form-field label { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); letter-spacing: .02em; }
+    .form-field select {
+      width: 100%; padding: 12px 16px; border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+      background: var(--paper); color: var(--ink); font-family: inherit; font-size: 16px;
+      outline: none; transition: border-color .18s, box-shadow .18s; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237A746A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center; cursor: pointer;
+    }
+    .form-field select:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(52,80,122,.1); background-color: var(--surface); }
     .form-field input, .form-field textarea {
       background: var(--paper); border: 1.5px solid var(--line); border-radius: 11px; padding: 13px 16px;
       font-size: 15px; color: var(--ink); font-family: 'Inter', sans-serif; outline: none;
@@ -537,6 +545,17 @@
           <input type="email" id="cf-email" placeholder="you@email.com" required autocomplete="email">
         </div>
         <div class="form-field">
+          <label for="cf-interest">I'm interested in</label>
+          <select id="cf-interest">
+            <option value="">Just getting in touch</option>
+            <option value="5i">5i — parallel AI synthesis engine</option>
+            <option value="Represented">Represented — AI legal platform</option>
+            <option value="StreamFader">StreamFader — content discovery</option>
+            <option value="Equil">Equil — biometric visualizer</option>
+            <option value="custom">Building something new with you</option>
+          </select>
+        </div>
+        <div class="form-field">
           <label for="cf-message">What are you building?</label>
           <textarea id="cf-message" placeholder="Tell me about the idea, the problem, the timeline…" required></textarea>
         </div>
@@ -610,6 +629,7 @@ async function submitForm(e) {
       body: JSON.stringify({
         name: document.getElementById('cf-name').value,
         email: document.getElementById('cf-email').value,
+        interest: document.getElementById('cf-interest').value,
         message: document.getElementById('cf-message').value
       })
     });

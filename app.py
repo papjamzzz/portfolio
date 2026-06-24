@@ -18,10 +18,13 @@ def contact():
     data = request.json or {}
     name = data.get('name', '').strip()[:100]
     email = data.get('email', '').strip()[:100]
+    interest = data.get('interest', '').strip()[:100]
     message = data.get('message', '').strip()[:2000]
 
     if not name or not email or not message:
         return jsonify({'ok': False, 'error': 'All fields required'}), 400
+
+    interest_line = f'<p><strong>Interested in:</strong> {interest}</p>' if interest else ''
 
     if RESEND_API_KEY:
         try:
@@ -35,7 +38,7 @@ def contact():
                     'from': FROM_EMAIL,
                     'to': [TO_EMAIL],
                     'subject': f'Portfolio contact from {name}',
-                    'html': f'<p><strong>Name:</strong> {name}</p><p><strong>Email:</strong> {email}</p><p><strong>Message:</strong><br>{message.replace(chr(10), "<br>")}</p>'
+                    'html': f'<p><strong>Name:</strong> {name}</p><p><strong>Email:</strong> {email}</p>{interest_line}<p><strong>Message:</strong><br>{message.replace(chr(10), "<br>")}</p>'
                 },
                 timeout=10
             )
