@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+from markupsafe import escape
 import os, requests
 
 app = Flask(__name__)
@@ -24,7 +25,8 @@ def contact():
     if not name or not email or not message:
         return jsonify({'ok': False, 'error': 'All fields required'}), 400
 
-    interest_line = f'<p><strong>Interested in:</strong> {interest}</p>' if interest else ''
+    safe_name, safe_email, safe_interest, safe_message = escape(name), escape(email), escape(interest), escape(message)
+    interest_line = f'<p><strong>Interested in:</strong> {safe_interest}</p>' if interest else ''
 
     if RESEND_API_KEY:
         try:
@@ -38,7 +40,7 @@ def contact():
                     'from': FROM_EMAIL,
                     'to': [TO_EMAIL],
                     'subject': f'Portfolio contact from {name}',
-                    'html': f'<p><strong>Name:</strong> {name}</p><p><strong>Email:</strong> {email}</p>{interest_line}<p><strong>Message:</strong><br>{message.replace(chr(10), "<br>")}</p>'
+                    'html': f'<p><strong>Name:</strong> {safe_name}</p><p><strong>Email:</strong> {safe_email}</p>{interest_line}<p><strong>Message:</strong><br>{str(safe_message).replace(chr(10), "<br>")}</p>'
                 },
                 timeout=10
             )
