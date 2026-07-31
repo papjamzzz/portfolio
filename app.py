@@ -44,9 +44,15 @@ def contact():
             )
             if r.status_code in (200, 201):
                 return jsonify({'ok': True})
-        except Exception:
-            pass
+            app.logger.error('Resend send failed: status=%s body=%s', r.status_code, r.text[:500])
+            return jsonify({'ok': False, 'error': 'Failed to send. Please email me directly.'}), 502
+        except Exception as exc:
+            app.logger.error('Resend send raised an exception: %s', exc)
+            return jsonify({'ok': False, 'error': 'Failed to send. Please email me directly.'}), 502
 
+    # No RESEND_API_KEY configured (local dev without .env) — degrade gracefully
+    # rather than pretending a real send happened.
+    app.logger.warning('RESEND_API_KEY not set — contact form submission was not emailed.')
     return jsonify({'ok': True})
 
 
