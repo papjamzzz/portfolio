@@ -1,12 +1,33 @@
 from flask import Flask, render_template, request, jsonify
 from markupsafe import escape
-import os, requests
+from werkzeug.middleware.proxy_fix import ProxyFix
+from collections import defaultdict
+import os, time, requests
 
 app = Flask(__name__)
+# Railway terminates TLS at a single edge proxy in front of this app, so trust
+# one hop of X-Forwarded-For/Proto for the real client IP (used by the rate
+# limiter below) instead of seeing the proxy's own address.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 FROM_EMAIL = os.environ.get('FROM_EMAIL', 'noreply@byjeremiahsmith.ink')
 TO_EMAIL = 'jeremiah@creativekonsoles.com'
+
+# Simple in-memory per-IP rate limit for /contact so the public, unauthenticated
+# endpoint can't be used to run up Resend usage or spam the inbox. Fine for a
+# single-process deploy (Railway/gunicorn default 1 worker); resets on restart.
+RATE_LIMIT_MAX = 5
+RATE_LIMIT_WINDOW_SECONDS = 15 * 60
+_contact_hits = defaultdict(list)
+
+
+def _rate_limited(ip):
+    now = time.time()
+    hits = [t for t in _contact_hits[ip] if now - t < RATE_LIMIT_WINDOW_SECONDS]
+    hits.append(now)
+    _contact_hits[ip] = hits
+    return len(hits) > RATE_LIMIT_MAX
 
 
 @app.route('/')
@@ -16,6 +37,9 @@ def index():
 
 @app.route('/contact', methods=['POST'])
 def contact():
+    if _rate_limited(request.remote_addr or 'unknown'):
+        return jsonify({'ok': False, 'error': 'Too many requests. Please try again later.'}), 429
+
     data = request.json or {}
     name = data.get('name', '').strip()[:100]
     email = data.get('email', '').strip()[:100]
