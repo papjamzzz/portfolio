@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 from markupsafe import escape
 from werkzeug.middleware.proxy_fix import ProxyFix
+from dotenv import load_dotenv
 from collections import defaultdict
 import os, time, requests
+
+load_dotenv()
 
 app = Flask(__name__)
 # Railway terminates TLS at a single edge proxy in front of this app, so trust
